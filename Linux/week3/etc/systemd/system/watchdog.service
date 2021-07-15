@@ -1,0 +1,9 @@
+[Unit]
+Description=Standart notification service
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/watchdog_script
+
+[Install]
+WantedBy=multi-user.target

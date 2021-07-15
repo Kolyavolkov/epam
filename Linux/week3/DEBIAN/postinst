@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# Post-install maintainer to reload daemons and start service.
+
+systemctl daemon-reload
+systemctl start watchdog
+echo "Do you want to start watchdog service automaticaly on startup? [Y/n]"
+read var
+if [ -z $var ] ; then
+  systemctl enable watchdog
+elif [ $var = "y" ] ; then
+  systemctl enable watchdog
+else
+  echo "watchdog service is not enabled"
+fi

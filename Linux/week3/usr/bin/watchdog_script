@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# Notify script 
+
+LOG=/var/log/watchdog.log
+touch $LOG
+
+timestamp () {
+  date +"%T_%F"
+}
+PIPE=/run/user/watchpipe
+
+[[ -f $PIPE ]] && rm $PIPE         #checks if pipe exists
+mkfifo -m 777 $PIPE
+systemd-notify --ready --status="watchdog active"
+
+while : ; do
+  read pid < $PIPE
+  systemd-notify --status="process with PID $pid started"
+  echo -e "$(timestamp) \n process with PID $pid started, writing to $LOG" >> $LOG
+  tail --pid=$pid -f /dev/null
+  echo -e "$(timestamp) \n process with PID $pid is over, writing to $LOG" >> $LOG
+  systemd-notify --status="process with PID $pid is over"
+done

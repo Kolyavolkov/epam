@@ -1,0 +1,20 @@
+#!/bin/bash
+#
+# Notify script 
+
+LOG=/var/log/watchdog.log
+touch $LOG
+
+
+[[ -f /tmp/mypipe ]] && rm /tmp/mypipe          #checks if pipe exists
+mkfifo -m 777 /tmp/mypipe
+systemd-notify --ready --status="watchdog active"
+
+while : ; do
+  read pid < /tmp/mypipe
+  systemd-notify --status="process with PID $pid started"
+  echo "process with PID $pid started" >> $LOG
+  tail --pid=$pid -f /dev/null
+  echo "process with PID $pid is over" >> $LOG
+  systemd-notify --status="process with PID $pid is over"
+done

@@ -1,0 +1,4 @@
+#!/bin/bash
+#
+# Postrm script - removes all assosiated files
+systemctl daemon-reload

@@ -1,0 +1,110 @@
+#!/bin/bash
+#
+# Shows info about RAM, environment, disk usage and directory statistic.
+
+set -e
+LOGS=./full_env_info.log   #variable to a log file
+echo "$!" >> /tmp/mypipe   #sending PID to pipe
+trap 'handler' 2 9 15
+
+function handler() {
+
+  echo -e "\n Received signal! \n You're trapped! exit code 4"
+  exit 4
+
+}
+
+function timestamp() {
+  date +"%T"
+}
+
+###########################################
+# Shows RAM , basic environment variables
+# and writes it into a log file in your current working directory.
+# Arguments:
+#   None
+###########################################
+
+function basic() {
+
+  echo -e "\n$(timestamp) Information about RAM"
+  echo -e "\n$(timestamp) INFORMATION ABOUT RAM\n" > $LOGS
+  free -h  | tee -a $LOGS
+  cat /proc/meminfo | head -3 >> $LOGS
+  memfree=`cat /proc/meminfo | grep MemFree | awk '{print $2}'`
+  memtotal=`cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
+  echo "$((($memfree * 100) / $memtotal))% of RAM is free" | tee -a $LOGS
+  echo -e "\n$(timestamp) Here is some basic environment information"
+  printenv | grep ^SHELL | tee -a $LOGS
+  printenv | grep ^TERM | tee -a $LOGS
+  printenv | grep ^USERNAME | tee -a $LOGS
+  printenv | grep ^PWD | tee -a $LOGS
+  printenv | grep ^PATH | tee -a $LOGS
+  printenv | grep ^LANG= | tee -a $LOGS
+  echo -e "\n$(timestamp) ENVIRONMENT VARIABLES INFORMATION\n" >> $LOGS
+  printenv >> $LOGS
+  echo -e "\n$(timestamp) $LOGS file created"
+
+}
+
+###########################################
+# Shows total disk usage, most heavy files in current directory,
+# all executables and stat.
+# Arguments:
+#   Number for tail output
+###########################################
+
+function printstat() {
+
+  timestamp
+  echo -e "\nSummary of total disk usage by $(pwd)"
+  du -sh $(pwd)
+  echo -e "\n$OPTARG most heavy files in $(pwd)"
+  ls -lSr | tail -$OPTARG
+  echo -e "\nAll executable files in here"
+  find $(pwd) -perm /a=x
+  echo -e "\nStat command"
+  stat $(pwd)
+
+}
+###########################################
+# Displays top 10 processes loading your CPU and RAM
+# in real time. Sorted by RAM.
+# Arguments :
+#   None
+###########################################
+
+function mytop() {
+  watch -n 1 'ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%mem | head'
+}
+
+function lo_ping() {
+  ping -c 10 127.0.0.1
+}
+
+function usage() {
+  echo -e "\n\t$0 \n\t[-b] [-s n] -- this script shows information about environment and
+  \n\tdirectory statistics. Where: -h --help  shows this manual.
+  \n\t-b --basic shows basic environment information, writes it to fullenvinfo.log
+  \n\tfile and appends output of printenv command.
+  \n\t-s --stat  shows summary of total disk usage, most heavy files and stat command.
+  \n\t[n] -argument for tailing output.
+  \n\t-p -- ping lo interface
+  \n\t-m -- Displays top 10 processes loading your CPU and RAM in real time. Sorted by RAM."
+
+}
+
+if [ -z "$1" ]; then   #checking for empty argument list
+  usage
+fi
+
+while getopts "s:bhpm" opt; do  #parcing arguments
+  case $opt in
+    s ) printstat $OPTARG ;;
+    b ) basic ;;
+    h ) usage ;;
+    p ) lo_ping ;;
+    m ) mytop ;;
+    \?) usage ;;
+  esac
+done

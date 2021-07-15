@@ -1,0 +1,149 @@
+AWSTemplateFormatVersion : "2010-09-09"
+
+Description : "A template that makes IAM User,group,policy,role,VPC with 3 subnets
+in all AZ and S3 bucket"
+
+Parameters :
+  Password:
+    NoEcho: true
+    Type: String
+    Description : "New account password"
+    MinLength: 8
+    MaxLength: 16
+    ConstraintDescription : "The password must be 8 to 16 characters"
+
+Resources :
+  EpamCFUser :
+    Type : AWS::IAM::User
+    Properties :
+      UserName : AleksandrCFtest
+      LoginProfile :
+        Password :
+          Ref: Password
+
+  EpamCFUserGroup :
+    Type : AWS::IAM::Group
+    Properties:
+      GroupName : CFTest
+
+  Users :
+    Type : AWS::IAM::UserToGroupAddition
+    Properties :
+      GroupName:
+        Ref: EpamCFUserGroup
+      Users :
+        - !Ref EpamCFUser
+
+  EpamCFUserPolicies :
+    Type : AWS::IAM::Policy
+    Properties :
+      PolicyName : EpamCFPolicy
+      PolicyDocument :
+        Version : "2012-10-17"
+        Statement :
+            - Effect: Allow
+              Action:
+                - 'cloudformation:Describe*'
+                - 'cloudformation:List*'
+                - 'cloudformation:Get*'
+              Resource: '*'
+      Groups :
+        - !Ref EpamCFUserGroup
+
+
+  EpamCFKeys :
+    Type : AWS::IAM::AccessKey
+    Properties :
+      UserName :
+        Ref: EpamCFUser
+
+  EpamCFVPC :
+    Type : AWS::EC2::VPC
+    Properties :
+      CidrBlock : 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags :
+       - Key : Name
+         Value : EpamCloudFormVpc
+
+  EpamCFInternetGateway :
+    Type : AWS::EC2::InternetGateway
+
+  InternetGatewayAttachment :
+    Type : AWS::EC2::VPCGatewayAttachment
+    Properties :
+      InternetGatewayId : !Ref EpamCFInternetGateway
+      VpcId : !Ref EpamCFVPC
+
+  PublicSubnet1 :
+    Type : AWS::EC2::Subnet
+    Properties :
+      VpcId : !Ref EpamCFVPC
+      AvailabilityZone : !Select [ 0, !GetAZs 'eu-central-1' ]
+      CidrBlock : 10.0.10.0/24
+      MapPublicIpOnLaunch : true
+
+  PublicSubnet2 :
+    Type : AWS::EC2::Subnet
+    Properties :
+      VpcId : !Ref EpamCFVPC
+      AvailabilityZone : !Select [ 1, !GetAZs 'eu-central-1' ]
+      CidrBlock : 10.0.20.0/24
+      MapPublicIpOnLaunch : true
+
+  PublicSubnet3 :
+    Type : AWS::EC2::Subnet
+    Properties :
+      VpcId : !Ref EpamCFVPC
+      AvailabilityZone : !Select [ 2, !GetAZs 'eu-central-1' ]
+      CidrBlock : 10.0.30.0/24
+      MapPublicIpOnLaunch : true
+
+  PublicRouteTable :
+    Type : AWS::EC2::RouteTable
+    Properties :
+      VpcId : !Ref EpamCFVPC
+
+  DefaultPublicRoute :
+    Type : AWS::EC2::Route
+    DependsOn : InternetGatewayAttachment
+    Properties :
+      RouteTableId : !Ref PublicRouteTable
+      DestinationCidrBlock : 0.0.0.0/0
+      GatewayId : !Ref EpamCFInternetGateway
+
+  PublicSubnet1RouteTableAssociation :
+    Type : AWS::EC2::SubnetRouteTableAssociation
+    Properties :
+      RouteTableId : !Ref PublicRouteTable
+      SubnetId : !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation :
+    Type : AWS::EC2::SubnetRouteTableAssociation
+    Properties :
+      RouteTableId : !Ref PublicRouteTable
+      SubnetId : !Ref PublicSubnet2
+
+  PublicSubnet3RouteTableAssociation :
+    Type : AWS::EC2::SubnetRouteTableAssociation
+    Properties :
+      RouteTableId : !Ref PublicRouteTable
+      SubnetId : !Ref PublicSubnet3
+
+  EpamS3Bucket :
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: epam-cftest-volkov-s3
+
+
+
+Outputs:
+  AccessKey:
+    Value: !Ref EpamCFKeys
+    Description: AWSAccessKeyId of new user
+  SecretKey:
+    Value: !GetAtt
+      - EpamCFKeys
+      - SecretAccessKey
+    Description: AWSSecretKey of new user

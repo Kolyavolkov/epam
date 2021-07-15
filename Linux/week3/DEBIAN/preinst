@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# Pre-install script for debugtool.
+# Removes old versions of programm files.
+
+echo "Checking for older version..."
+
+if [ -f "/etc/systemd/system/watchdog.service" ] ; then
+  systemctl stop watchdog
+  rm -f /lib/systemd/system/watchdog.service
+  echo "Removed old version from /etc/systemd/system..."
+fi
+
+if [ -f "/usr/bin/watchdog_script" ] ; then
+  rm -f /usr/bin/watchdog_script
+  echo "Removed old version from /usr/bin..."
+fi
+
+if [ -f "/usr/bin/debugtool" ] ; then
+  rm -f /usr/bin/debugtool
+  echo "Removed old version from /usr/bin..."
+fi
+
+if [ -f "/run/user/watchpipe" ] ; then
+  rm -f /run/user/watchpipe
+  echo "Removed old watchpipe"
+fi

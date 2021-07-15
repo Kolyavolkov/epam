@@ -1,0 +1,8 @@
+To run this watchdog service you should execute following commands with sudo privileges.
+
+cp watchdog.service /etc/systemd/system/
+cp watchdog_script /usr/bin/
+systemctl daemon-reload
+systemctl start watchdog
+
+Now service is running, you can check it by "systemctl status watchdog" command

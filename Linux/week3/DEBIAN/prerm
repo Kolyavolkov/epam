@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# Prerm script - stops service before deleting
+
+if [ -f "/etc/systemd/system/watchdog.service" ] ; then
+  systemctl stop watchdog
+  systemctl disable watchdog
+fi

@@ -1,0 +1,378 @@
+AWSTemplateFormatVersion : "2010-09-09"
+
+Description : "A template that makes IAM User,group,policy,role,VPC with 3 subnets
+in all AZ and S3 bucket"
+
+Parameters :
+  Password:
+    NoEcho: true
+    Type: String
+    Description : "New account password"
+    MinLength: 8
+    MaxLength: 16
+    ConstraintDescription : "The password must be 8 to 16 characters"
+
+Resources :
+  EpamCFUser :
+    Type : AWS::IAM::User
+    Properties :
+      UserName : AleksandrCFtest
+      LoginProfile :
+        Password :
+          Ref: Password
+
+  EpamCFUserGroup :
+    Type : AWS::IAM::Group
+    Properties:
+      GroupName : CFTest
+
+  Users :
+    Type : AWS::IAM::UserToGroupAddition
+    Properties :
+      GroupName:
+        Ref: EpamCFUserGroup
+      Users :
+        - !Ref EpamCFUser
+
+  EpamCFUserPolicies :
+    Type : AWS::IAM::Policy
+    Properties :
+      PolicyName : EpamCFPolicy
+      PolicyDocument :
+        Version : "2012-10-17"
+        Statement :
+            - Effect: Allow
+              Action:
+                - 'cloudformation:Describe*'
+                - 'cloudformation:List*'
+                - 'cloudformation:Get*'
+              Resource: '*'
+      Groups :
+        - !Ref EpamCFUserGroup
+
+
+  EpamCFKeys :
+    Type : AWS::IAM::AccessKey
+    Properties :
+      UserName :
+        Ref: EpamCFUser
+
+  EpamCFVPC :
+    Type : AWS::EC2::VPC
+    Properties :
+      CidrBlock : 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags :
+       - Key : Name
+         Value : EpamCloudFormVpc
+
+  EpamCFNACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       VpcId: !Ref EpamCFVPC
+       Tags:
+       - Key: Name
+         Value: NACL allows all inbound/outbound traffic
+
+  InboundRule:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref: EpamCFNACL
+       RuleNumber: 200
+       Protocol: -1
+       RuleAction: allow
+       CidrBlock: 0.0.0.0/0
+
+  OutboundRule:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref: EpamCFNACL
+       RuleNumber: 300
+       Protocol: -1
+       Egress: true
+       RuleAction: allow
+       CidrBlock: 0.0.0.0/0
+
+  EpamSubnetNetworkAclAssociation1:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet1
+      NetworkAclId:
+        Ref: EpamCFNACL
+  EpamSubnetNetworkAclAssociation2:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet2
+      NetworkAclId:
+        Ref: EpamCFNACL
+  EpamSubnetNetworkAclAssociation3:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet3
+      NetworkAclId:
+        Ref: EpamCFNACL
+
+  EpamCFSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+        GroupDescription: Allow ssh
+        VpcId:
+           Ref: EpamCFVPC
+        SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  EFSSecurityGroup:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties:
+            GroupDescription: "security group for the prod EFS"
+            GroupName: "test-EFS-SG"
+            VpcId: !Ref EpamCFVPC
+            SecurityGroupIngress:
+              -
+                SourceSecurityGroupId: !Ref EpamCFSG
+                Description: "servers to connect to efs"
+                FromPort: 2049
+                IpProtocol: "tcp"
+                ToPort: 2049
+
+  EpamCFInternetGateway :
+    Type : AWS::EC2::InternetGateway
+
+  InternetGatewayAttachment :
+    Type : AWS::EC2::VPCGatewayAttachment
+    Properties :
+      InternetGatewayId : !Ref EpamCFInternetGateway
+      VpcId : !Ref EpamCFVPC
+
+  PublicSubnet1 :
+    Type : AWS::EC2::Subnet
+    Properties :
+      VpcId : !Ref EpamCFVPC
+      AvailabilityZone : !Select [ 0, !GetAZs 'eu-central-1' ]
+      CidrBlock : 10.0.230.0/24
+      MapPublicIpOnLaunch : true
+      Tags :
+       - Key : Name
+         Value : TestCloudForm1
+
+  PublicSubnet2 :
+    Type : AWS::EC2::Subnet
+    Properties :
+      VpcId : !Ref EpamCFVPC
+      AvailabilityZone : !Select [ 1, !GetAZs 'eu-central-1' ]
+      CidrBlock : 10.0.240.0/24
+      MapPublicIpOnLaunch : true
+      Tags :
+       - Key : Name
+         Value : TestCloudForm2
+
+  PublicSubnet3 :
+    Type : AWS::EC2::Subnet
+    Properties :
+      VpcId : !Ref EpamCFVPC
+      AvailabilityZone : !Select [ 2, !GetAZs 'eu-central-1' ]
+      CidrBlock : 10.0.250.0/24
+      MapPublicIpOnLaunch : true
+      Tags :
+       - Key : Name
+         Value : TestCloudForm3
+
+  PublicRouteTable :
+    Type : AWS::EC2::RouteTable
+    Properties :
+      VpcId : !Ref EpamCFVPC
+
+  DefaultPublicRoute :
+    Type : AWS::EC2::Route
+    DependsOn : InternetGatewayAttachment
+    Properties :
+      RouteTableId : !Ref PublicRouteTable
+      DestinationCidrBlock : 0.0.0.0/0
+      GatewayId : !Ref EpamCFInternetGateway
+
+  PublicSubnet1RouteTableAssociation :
+    Type : AWS::EC2::SubnetRouteTableAssociation
+    Properties :
+      RouteTableId : !Ref PublicRouteTable
+      SubnetId : !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation :
+    Type : AWS::EC2::SubnetRouteTableAssociation
+    Properties :
+      RouteTableId : !Ref PublicRouteTable
+      SubnetId : !Ref PublicSubnet2
+
+  PublicSubnet3RouteTableAssociation :
+    Type : AWS::EC2::SubnetRouteTableAssociation
+    Properties :
+      RouteTableId : !Ref PublicRouteTable
+      SubnetId : !Ref PublicSubnet3
+
+  EpamS3Bucket :
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: epam-cftest-volkov-s3
+
+  BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref EpamS3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Deny
+          Action:
+            - 's3:GetObject'
+          Resource: arn:aws:s3:::epam-cftest-volkov-s3/Unknown.jpg
+          Principal:
+            AWS :
+              - arn:aws:iam::011251885606:user/Aleksandr
+
+  EpamCFInstanceEC2num1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-089b5384aac360007
+      IamInstanceProfile: !Ref RootInstanceProfile
+      InstanceType: t2.micro
+      AvailabilityZone: eu-central-1a
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            aws s3 cp s3://epam-cftest-volkov-s3/mountscript ./
+            chmod +x mountscript
+            ./mountscript
+            aws s3 cp s3://epam-cftest-volkov-s3/CWagent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+      SubnetId: !Ref PublicSubnet1
+      SecurityGroupIds:
+        - !Ref EpamCFSG
+
+  EpamCFInstanceEC2num2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-089b5384aac360007
+      IamInstanceProfile: !Ref RootInstanceProfile2
+      InstanceType: t2.micro
+      AvailabilityZone: eu-central-1b
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            aws s3 cp s3://epam-cftest-volkov-s3/mountscript ./
+            chmod +x mountscript
+            ./mountscript
+            aws s3 cp s3://epam-cftest-volkov-s3/CWagent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+      SubnetId: !Ref PublicSubnet2
+      SecurityGroupIds:
+        - !Ref EpamCFSG
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 2
+
+  EpamEFS:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      BackupPolicy:
+        Status: ENABLED
+      LifecyclePolicies:
+        - TransitionToIA: AFTER_30_DAYS
+      PerformanceMode: generalPurpose
+      ThroughputMode: bursting
+
+  MountTarget1:
+        Type: AWS::EFS::MountTarget
+        Properties:
+            FileSystemId: !Ref EpamEFS
+            IpAddress: 10.0.230.10
+            SecurityGroups:
+              - !Ref EFSSecurityGroup
+            SubnetId: !Ref PublicSubnet1
+
+  MountTarget2:
+        Type: AWS::EFS::MountTarget
+        Properties:
+            FileSystemId: !Ref EpamEFS
+            IpAddress: 10.0.240.10
+            SecurityGroups:
+              - !Ref EFSSecurityGroup
+            SubnetId: !Ref PublicSubnet2
+
+  MountTarget3:
+        Type: AWS::EFS::MountTarget
+        Properties:
+            FileSystemId: !Ref EpamEFS
+            IpAddress: 10.0.250.10
+            SecurityGroups:
+              - !Ref EFSSecurityGroup
+            SubnetId: !Ref PublicSubnet3
+
+  RootInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref S3WritableRole
+
+  RootInstanceProfile2:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref S3WritableRole
+
+  S3WritableRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+
+  RolePolicies:
+    Type: AWS::IAM::Policy
+    DependsOn:
+      - EpamCFInstanceEC2num1
+      - EpamCFInstanceEC2num2
+    Properties:
+      PolicyName: S3InstancePolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: 's3:*'
+            Resource: '*'
+      Roles:
+        - !Ref S3WritableRole
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+      - Endpoint: "kolyavolkov@inbox.ru"
+        Protocol: email
+
+
+
+
+Outputs:
+  AccessKey:
+    Value: !Ref EpamCFKeys
+    Description: AWSAccessKeyId of new user
+  SecretKey:
+    Value: !GetAtt
+      - EpamCFKeys
+      - SecretAccessKey
+    Description: AWSSecretKey of new user

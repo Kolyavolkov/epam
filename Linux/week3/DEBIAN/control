@@ -1,0 +1,8 @@
+Package: debugtool
+Version: 1.1
+Architecture: amd64
+Pre-depends: findutils, iproute2
+Essential: no
+Priority: optional
+Maintainer: nikolai volkov, email: kolyavolkov@inbox.ru
+Description: a programm that shows basic system information
