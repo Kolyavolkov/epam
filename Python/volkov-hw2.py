@@ -104,7 +104,7 @@ def format_with_percent(data: Metrics):
     """
     # ... write the code...
     # temporary string is fine here too
-    tmpstr = "[0x%x] CPU #7: %i%%, Memory used: %i, Load avg: %.2f" %(data.agent_address,data.cpu_data[7],data.memory_used,data.load_avg)
+    tmpstr = "[%#x] CPU #7: %i%%, Memory used: %i, Load avg: %.2f" %(data.agent_address,data.cpu_data[7],data.memory_used,data.load_avg)
     return "%64s" %tmpstr
 
 #### Tests ####
