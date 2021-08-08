@@ -1,0 +1,74 @@
+---
+- name: AWSCLI installer
+  hosts: stage_server
+  become: yes
+  remote_user: ubuntu
+  become_user: root
+
+  tasks:
+
+    - name: Install dependencies for awscli
+      apt:
+        name: "python3-pip"
+        state: latest
+        update_cache: yes
+
+    - name: Install awscli with pip3
+      pip:
+        name: "awscli"
+        executable: pip3
+
+    - name: Install boto with pip3
+      pip:
+        name: "boto3"
+        executable: pip3
+
+    - name: Notify file creation
+      file:
+        path: "/awscli_installed"
+        state: touch
+
+    - name: Copy to S3
+      amazon.aws.aws_s3:
+        bucket: epam-test-storage
+        object: "/awscli_installed"
+        src: "/awscli_installed"
+        mode: put
+
+- name: Script execute
+  hosts: prod_server
+  remote_user: ubuntu
+
+  tasks:
+
+    - name: copy script
+      copy:
+        src: script
+        dest: $HOME/create_file_script
+        owner: ubuntu
+        group: ubuntu
+        mode: 0755
+
+    - name: Execute the script
+      command: sh $HOME/create_file_script
+
+- name: Cloudwatch installer
+  hosts: all_servers
+  become: yes
+  remote_user: ubuntu
+  become_user: root
+
+  tasks:
+
+    - name: Install Cloudwatch
+      apt:
+        deb: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+      notify: Cloudwatch is ready
+
+  handlers:
+
+    - name: Cloudwatch is ready
+      ansible.builtin.systemd:
+        name: amazon-cloudwatch-agent
+        state: started
+        enabled: yes
