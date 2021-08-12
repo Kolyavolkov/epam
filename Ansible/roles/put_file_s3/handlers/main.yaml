@@ -1,0 +1,4 @@
+---
+- name: Creation_alert
+  debug:
+    msg: "File copied to {{ bucket_name }}"

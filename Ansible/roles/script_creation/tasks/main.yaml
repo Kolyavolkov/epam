@@ -1,0 +1,9 @@
+---
+- name: Ansible Template Example
+  template:
+    src: script.j2
+    dest: /script
+    mode: 0777
+
+- name: script execution
+  raw: /script

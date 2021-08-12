@@ -1,0 +1,4 @@
+---
+var1: "Hello"
+var2: "Ansible"
+var3: "{{ ansible_nodename }}"

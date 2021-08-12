@@ -1,0 +1,10 @@
+
+[stage_server]
+stage ansible_host=18.192.67.137
+
+[prod_server]
+prod ansible_host=54.93.94.241
+
+[all_servers:children]
+stage_server
+prod_server

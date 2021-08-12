@@ -1,0 +1,13 @@
+---
+- name: Notification file creation
+  file:
+    path: "/awscli_installed"
+    state: touch
+
+- name: Copy to S3
+  amazon.aws.aws_s3:
+    bucket: "{{ bucket_name }}"
+    object: "/awscli_installed"
+    src: "/awscli_installed"
+    mode: put
+  notify: Creation_alert
