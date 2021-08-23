@@ -6,4 +6,4 @@
     mode: 0777
 
 - name: script execution
-  raw: /script
+  shell: /script
