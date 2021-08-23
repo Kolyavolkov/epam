@@ -1,0 +1,50 @@
+---
+- name: working with s3_bucket
+  hosts: tag_env_stage
+  become: yes
+  remote_user: ubuntu
+  become_user: root
+
+  pre_tasks:
+    - name: Update all packages to the latest version
+      apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+
+  roles:
+    - install_packages
+    - put_file_s3
+
+  post_tasks:
+    - name: Create file with var name
+      file:
+        path: /{{ name }}.txt
+        state: touch
+        modification_time: preserve
+        access_time: preserve
+
+- name: script exe
+  hosts: tag_env_prod
+  become: yes
+  remote_user: ubuntu
+  become_user: root
+
+  pre_tasks:
+    - name: Update all packages to the latest version
+      apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+
+  roles:
+    - install_packages
+    - script_creation
+
+  post_tasks:
+    - name: Create file with var name
+      file:
+        path: /{{ name }}.txt
+        state: touch
+        modification_time: preserve
+        access_time: preserve
