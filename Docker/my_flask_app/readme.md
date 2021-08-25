@@ -35,3 +35,11 @@ docker-compose --env-file .env up -d
 
 App runs at localhost:5000
 Pgadmin runs at localhost:5050
+---
+
+To connect to database go to localhost:5050, entry e-mail & password.
+Create new connection with server:
+  - hostname should be "postgres"
+  - database $POSTRES_USER
+  - user $POSTGRES_USER
+  - password $POSTGRES_PASSWORD
