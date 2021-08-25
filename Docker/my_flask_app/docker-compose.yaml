@@ -1,10 +1,15 @@
 version: "3.8"
 
+volumes:
+  weather_app_db:
+
 services:
   database:
     container_name: postgres
     hostname: postgres
     image: postgres
+    volumes:
+      - weather_app_db:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -30,13 +35,17 @@ services:
     container_name: flask
     hostname: flask
     build: .
+    restart: always
     environment:
       USER: "${USER}"
       API_KEY: "${API_KEY}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
     ports:
     - "5000:5000"
     depends_on:
     - database
+    - pgadmin
     networks:
     - postgresql
     

@@ -28,9 +28,9 @@ def index():
 
 con = psycopg2.connect(
     host = "postgres",
-    database = "postgres",
-    user = "postgres",
-    password = "password",
+    database = os.environ["POSTGRES_USER"],
+    user = os.environ["POSTGRES_USER"],
+    password = os.environ["POSTGRES_PASSWORD"],
     port = 5432
     )
 
