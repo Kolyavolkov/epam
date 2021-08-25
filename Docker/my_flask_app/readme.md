@@ -9,8 +9,10 @@ Download [Docker Desktop](https://www.docker.com/products/docker-desktop) for Ma
 
 Before running docker-compose you should create .env file inside app folder and specify
 environment variables.
+
+Copy your api key from [Openweather](https://openweathermap.org/api)
 ```
-API_KEY=copy your api key from [Openweather](https://openweathermap.org/api)
+API_KEY=****
 ```
 Provide your email and password to access pgadmin
 ```
