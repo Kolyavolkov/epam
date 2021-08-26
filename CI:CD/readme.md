@@ -22,7 +22,6 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
 ```
 
----
 After that open epam_pipe.sh and specify variables
 REPO="URL to your github repository"
 PIPE="Directory where you want to clone remote repo"
