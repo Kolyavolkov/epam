@@ -20,9 +20,9 @@ Postgres will create database and user named $POSTGRES_USER
 ```
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
-```
 
 After that open epam_pipe.sh and specify variables
+
 REPO="URL to your github repository"
 PIPE="Directory where you want to clone remote repo"
 APP_FILE="Python file that have to be checked by pylint"
