@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 from flask import Flask, render_template, request
 import requests
-import os
 import psycopg2
 import dotenv
 
@@ -15,7 +15,7 @@ def index():
         city = request.form["city"]
         country = request.form["country"]
         api_key = os.environ["API_KEY"]
-        
+
         weather_url = requests.get(f"http://api.openweathermap.org/data/2.5/weather?appid={api_key}&q={city},{country}&units=metric")
         weather_data = weather_url.json()
 
