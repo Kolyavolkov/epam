@@ -16,7 +16,7 @@ def index():
         country = request.form["country"]
         api_key = os.environ["API_KEY"]
         url = ("http://api.openweathermap.org/data/2.5/"
-              f"weather?appid={api_key}&q={city},{country}&units=metric")
+               f"weather?appid={api_key}&q={city},{country}&units=metric")
         weather_url = requests.get(url)
         weather_data = weather_url.json()
 
@@ -25,7 +25,7 @@ def index():
         wind_speed = weather_data["wind"]["speed"]
         write_db(country, city, temp)
         return render_template("result.html", temp=temp, humidity=humidity,
-                                wind_speed=wind_speed, city=city)
+                               wind_speed=wind_speed, city=city)
     return render_template("index.html", name=name)
 
 
