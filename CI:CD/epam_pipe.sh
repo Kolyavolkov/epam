@@ -10,7 +10,7 @@ PIPE="${2:-$'EPAM'}" # Directory name where you want to keep cloned repo
 APP_FILE="${3:-$'app.py'}" # File to be lintered
 BUILD_DIR="${4:-$'my_flask_app'}" # Dir with docker file
 SECRET="${5:-$'/Users/volkov/Documents/Gitrepo/Docker/my_flask_app/.env'}" # Path to .env file
-
+TAG="$(git tag)"
 
 ####
 # Finds file you want to check and executes pylint
@@ -27,12 +27,12 @@ function linter() {
 
 function build_image() {
   cd "$(find . -type d -name $BUILD_DIR)"
-  docker build -t kolyavolkov/my_flask_app:latest -t kolyavolkov/my_flask_app:v1.1 .
+  docker build -t kolyavolkov/my_flask_app:latest -t kolyavolkov/my_flask_app:$TAG .
 }
 
 function push_image() {
   docker push kolyavolkov/my_flask_app:latest
-  docker push kolyavolkov/my_flask_app:v1.1
+  docker push kolyavolkov/my_flask_app:$TAG
 }
 
 function dock_comp() {
