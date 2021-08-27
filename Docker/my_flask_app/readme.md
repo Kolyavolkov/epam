@@ -1,6 +1,6 @@
 A simple distributed weather application running across multiple Docker containers
 with Postgresql database and pgadmin to access db with web interface.
-https://app.travis-ci.com/Kolyavolkov/epam.svg?branch=master
+[![Build Status](https://app.travis-ci.com/Kolyavolkov/epam.svg?branch=master)](https://app.travis-ci.com/Kolyavolkov/epam)
 ===
 
 Getting started
