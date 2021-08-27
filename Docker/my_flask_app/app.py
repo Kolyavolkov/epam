@@ -24,20 +24,22 @@ def index():
         wind_speed = weather_data["wind"]["speed"]
         write_db(country, city, temp)
         return render_template("result.html", temp = temp , humidity = humidity, wind_speed = wind_speed, city = city)
-    return render_template("index.html", name = name)
+    return render_template("index.html", name=name)
+
 
 con = psycopg2.connect(
-    host = "postgres",
-    database = os.environ["POSTGRES_USER"],
-    user = os.environ["POSTGRES_USER"],
-    password = os.environ["POSTGRES_PASSWORD"],
-    port = 5432
+    host="postgres",
+    database=os.environ["POSTGRES_USER"],
+    user=os.environ["POSTGRES_USER"],
+    password=os.environ["POSTGRES_PASSWORD"],
+    port=5432
     )
+
 
 @app.before_first_request
 def create_table():
 
-    cur = con.cursor()
+    cur=con.cursor()
 
     sql ='''CREATE TABLE IF NOT EXISTS Weather(
             Id SERIAL PRIMARY KEY,
@@ -48,6 +50,7 @@ def create_table():
     cur.execute(sql)
     con.commit()
     cur.close()
+
 
 def write_db(country, city, temp):
 
@@ -60,4 +63,4 @@ def write_db(country, city, temp):
 
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0')
