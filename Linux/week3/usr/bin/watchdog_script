@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Notify script 
+# Notify script
 
 LOG=/var/log/watchdog.log
 touch $LOG

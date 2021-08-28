@@ -15,7 +15,10 @@ def accepts_function(fn):
         fn (function):
     """
     # write code here
-    return fn() + THE_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
+    return (
+        fn() + THE_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
+    )
+
 
 # sum is a built-in that you shouldn't use there :)
 def sum_numbers(*args) -> int:
@@ -25,7 +28,6 @@ def sum_numbers(*args) -> int:
     for num in args:
         summary += num
     return summary
-
 
 
 def avg(*args) -> int:

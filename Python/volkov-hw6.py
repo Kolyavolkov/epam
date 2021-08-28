@@ -47,11 +47,21 @@ class Project:
         self.tags.update(self.create_default_tags())
 
     def create(self, once=True):
-        ec2 = boto3.client("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
-        ec2_res = boto3.resource("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
+        ec2 = boto3.client(
+            "ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000"
+        )
+        ec2_res = boto3.resource(
+            "ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000"
+        )
         if once:
-            if any(ec2_res.images.filter(Filters=[{"Name": "name", "Values": [f"{self.name}"]}])):
-                print(f"already registered image {self.name}, that means instances are created too")
+            if any(
+                ec2_res.images.filter(
+                    Filters=[{"Name": "name", "Values": [f"{self.name}"]}]
+                )
+            ):
+                print(
+                    f"already registered image {self.name}, that means instances are created too"
+                )
                 return
 
         ami_id = ec2.register_image(Name=self.name, Description=self.name)["ImageId"]
@@ -91,7 +101,6 @@ class Homework:
     You can use low-level client or high level client and return list of instance classes if you've used high-level one
     and list of instance' dictionaries in case of low-level client
     """
-    
 
     def find_by_tag(self, tag_name, tag_value):
         """This method should return instances that have `tag_name` == `tag_value`
@@ -100,22 +109,27 @@ class Homework:
             tag_name ([type]): [description]
             tag_value ([type]): [description]
         """
-        ec2 = boto3.resource("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
+        ec2 = boto3.resource(
+            "ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000"
+        )
 
-        return ec2.instances.filter(Filters=[{"Name": "tag:"+tag_name, "Values": [tag_value]}])
-        
+        return ec2.instances.filter(
+            Filters=[{"Name": "tag:" + tag_name, "Values": [tag_value]}]
+        )
 
     def list_all_owners(self):
         """This method should list all owners of all instances from instance's tag "Owner"
         Caveat: Owner might be listed only once!
         """
-        
-        ec2 = boto3.resource("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
-        
+
+        ec2 = boto3.resource(
+            "ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000"
+        )
+
         owners_list = []
         for inst in ec2.instances.all():
             for tags in inst.tags:
-                if tags["Key"] == 'Owner':
+                if tags["Key"] == "Owner":
                     owners_list.append(tags["Value"])
 
         return set(owners_list)
@@ -124,24 +138,31 @@ class Homework:
         """This method should return all AMI images that are older than `threshold_days` days (use datetime.timedelta and datetime.fromisoformat)
         see https://docs.python.org/3/library/datetime.html#datetime.date.fromisoformat
         """
-        
-        ec2 = boto3.client("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
+
+        ec2 = boto3.client(
+            "ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000"
+        )
         amis = ec2.describe_images(Owners=["self"])["Images"]
         old_amis = []
         for ami in amis:
-            creation_date = datetime.strptime(ami["CreationDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
+            creation_date = datetime.strptime(
+                ami["CreationDate"], "%Y-%m-%dT%H:%M:%S.%fZ"
+            )
             delta = datetime.now() - creation_date
-            if delta > timedelta(days = threshold_days):
+            if delta > timedelta(days=threshold_days):
                 old_amis.append(ami["ImageID"])
         return old_amis
-            
-    
+
     def find_jenkins(self):
         """This method should use boto3 and return instances that have tag "Project" == "Jenkins" """
 
-        ec2 = boto3.resource("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
+        ec2 = boto3.resource(
+            "ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000"
+        )
 
-        return ec2.instances.filter(Filters=[{"Name": "tag:Project", "Values": ["Jenkins"]}])
+        return ec2.instances.filter(
+            Filters=[{"Name": "tag:Project", "Values": ["Jenkins"]}]
+        )
 
 
 class Homework6Test(unittest.TestCase):
@@ -149,7 +170,9 @@ class Homework6Test(unittest.TestCase):
         self.ec2_resource = boto3.resource(
             "ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000"
         )
-        self.ec2_client = boto3.client("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
+        self.ec2_client = boto3.client(
+            "ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000"
+        )
         self.hw = Homework()
 
     def get_object_attr(self, o, attr, alternative_attr, default=None):
@@ -174,7 +197,9 @@ class Homework6Test(unittest.TestCase):
         return tags.get("Owner")
 
     def test_find_jenkins(self):
-        truth = self.ec2_resource.instances.filter(Filters=[{"Name": "tag:Project", "Values": ["Jenkins"]}])
+        truth = self.ec2_resource.instances.filter(
+            Filters=[{"Name": "tag:Project", "Values": ["Jenkins"]}]
+        )
         truth = list(map(self.get_instance_id, truth))
         results = self.hw.find_jenkins()
         results = map(self.get_instance_id, results)
@@ -189,17 +214,23 @@ class Homework6Test(unittest.TestCase):
             )
             truth = map(self.get_ami_id, truth)
             truth = list(sorted(truth))
-            results = map(self.get_ami_id, self.hw.list_old_amis(threshold_days=threshold))
+            results = map(
+                self.get_ami_id, self.hw.list_old_amis(threshold_days=threshold)
+            )
             self.assertEqual(sorted(results), truth)
 
     def test_list_owners(self):
-        truth = self.ec2_resource.instances.filter(Filters=[{"Name": "tag-key", "Values": ["Owner"]}])
+        truth = self.ec2_resource.instances.filter(
+            Filters=[{"Name": "tag-key", "Values": ["Owner"]}]
+        )
         truth = map(self.get_owner, truth)
         results = self.hw.list_all_owners()
         self.assertEqual(sorted(set(truth)), sorted(results))
 
     def test_find_by_tag(self):
-        truth = self.ec2_resource.instances.filter(Filters=[{"Name": "tag:Env", "Values": ["test"]}])
+        truth = self.ec2_resource.instances.filter(
+            Filters=[{"Name": "tag:Env", "Values": ["test"]}]
+        )
         truth = map(self.get_instance_id, truth)
         results = self.hw.find_by_tag("Env", "test")
         results = map(self.get_instance_id, results)

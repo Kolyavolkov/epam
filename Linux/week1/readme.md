@@ -2,7 +2,7 @@
 # What is it?
 
 
-This script is a powerful tool for getting info about your environment 
+This script is a powerful tool for getting info about your environment
 and statistic of your current working directory.
 
 ## Licensing
@@ -35,8 +35,7 @@ SOFTWARE.
 Basic options
     -s [ number ]    Displays [ number ] most heavy files in current working directory
 
-    -b     Displays most basic environment variables 
-           and writes full version of "printenv" command to 
+    -b     Displays most basic environment variables
+           and writes full version of "printenv" command to
            "fullenvinfo.txt" file in current working directory.
     -h     Displays manual
-

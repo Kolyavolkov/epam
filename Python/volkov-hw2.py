@@ -73,7 +73,12 @@ def format_with_format(data: Metrics):
     # ... write the code...
     # temporary string is fine there too
     tmpstr = "[{pid}] CPU #7: {cpu[7]}%, Memory used: {memory}, Load avg: {load:.02f}"
-    tmp = tmpstr.format(pid=data.agent[-4:],cpu=data.cpu_data,memory=data.memory_used,load=data.load_avg)
+    tmp = tmpstr.format(
+        pid=data.agent[-4:],
+        cpu=data.cpu_data,
+        memory=data.memory_used,
+        load=data.load_avg,
+    )
     return "{:->64}".format(tmp)
 
 
@@ -104,8 +109,14 @@ def format_with_percent(data: Metrics):
     """
     # ... write the code...
     # temporary string is fine here too
-    tmpstr = "[%#x] CPU #7: %i%%, Memory used: %i, Load avg: %.2f" %(data.agent_address,data.cpu_data[7],data.memory_used,data.load_avg)
-    return "%64s" %tmpstr
+    tmpstr = "[%#x] CPU #7: %i%%, Memory used: %i, Load avg: %.2f" % (
+        data.agent_address,
+        data.cpu_data[7],
+        data.memory_used,
+        data.load_avg,
+    )
+    return "%64s" % tmpstr
+
 
 #### Tests ####
 

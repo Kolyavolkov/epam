@@ -106,7 +106,7 @@ class KeepEverythingStartsFrom(BaseRule):
     def __init__(self, starts_from):
         super().__init__()
         self.starts_from = starts_from
-    
+
     def check(self, item) -> bool:
         if item.startswith(self.starts_from):
             return self.allow(item)
@@ -120,7 +120,7 @@ class DenyEverythingStartsFrom(BaseRule):
     def __init__(self, starts_from):
         super().__init__()
         self.starts_from = starts_from
-    
+
     def check(self, item) -> bool:
         if item.startswith(self.starts_from):
             return self.deny(item)

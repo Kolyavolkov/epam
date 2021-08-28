@@ -20,10 +20,10 @@ function basic() {
 }
 
 function printstat() {
-    
+
     echo "Summary of total disk usage by $(pwd)"
     du -sh $(pwd)
-    echo 
+    echo
     echo "$OPTARG most heavy files in $(pwd)"
     echo
     ls -lSr | tail -$OPTARG
@@ -59,5 +59,3 @@ while getopts ":s:bh" opt; do  #parcing arguments
         \?) echo "Use : cmd [-s] [-b] [-h]";;
     esac
 done
-
-

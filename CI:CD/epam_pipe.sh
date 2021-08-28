@@ -40,14 +40,14 @@ function dock_comp() {
 }
 
 ####
-# Checks if remote repo is available locally, if not creates dir named $PIPE 
+# Checks if remote repo is available locally, if not creates dir named $PIPE
 # at current working dir and clones repo there.
 # When repo is available localy runs pylint and docker build if version differs
 ####
 
 function pull_repo() {
   echo -e "Pulling from remote repository \xe2\x9c\x85"
-  
+
   if [[ ! -d "./$PIPE" ]]; then
       git clone $REPO
   fi
@@ -70,4 +70,3 @@ function pull_repo() {
 }
 
 pull_repo
-

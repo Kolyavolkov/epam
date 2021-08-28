@@ -48,7 +48,7 @@ services:
     - pgadmin
     networks:
     - postgresql
-    
+
 networks:
   postgresql:
     driver: bridge

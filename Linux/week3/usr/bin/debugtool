@@ -86,7 +86,7 @@ function printstat() {
 function mytop() {
 
   watch -n 1 'ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%mem | head'
-  
+
 }
 
 
@@ -114,7 +114,7 @@ function netstat() {
   ssh_con | tee -a $LOGS
   echo -e "\n DDOSing google"
   ping -c 5 8.8.8.8 | tee -a $LOGS
-  
+
 }
 
 
@@ -141,6 +141,6 @@ while getopts "s:bhnm" opt; do  #parcing arguments
     h ) usage ;;
     n ) netstat ;;
     m ) mytop ;;
-    \?) usage 
+    \?) usage
   esac
 done
