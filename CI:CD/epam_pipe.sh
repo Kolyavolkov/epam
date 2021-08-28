@@ -10,7 +10,7 @@ PIPE="${2:-$'EPAM'}" # Directory name where you want to keep cloned repo
 APP_FILE="${3:-$'app.py'}" # File to be lintered
 BUILD_DIR="${4:-$'my_flask_app'}" # Dir with docker file
 SECRET="${5:-$'/Users/volkov/Documents/Gitrepo/Docker/my_flask_app/.env'}" # Path to .env file
-TAG="$(git tag)"
+TAG="$(git describe --abbrev=0)"
 
 ####
 # Finds file you want to check and executes pylint
